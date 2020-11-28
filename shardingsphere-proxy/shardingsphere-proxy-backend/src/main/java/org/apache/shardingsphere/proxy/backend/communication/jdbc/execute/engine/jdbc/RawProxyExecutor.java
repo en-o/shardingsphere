@@ -18,13 +18,13 @@
 package org.apache.shardingsphere.proxy.backend.communication.jdbc.execute.engine.jdbc;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.shardingsphere.infra.executor.kernel.ExecutorKernel;
-import org.apache.shardingsphere.infra.executor.kernel.InputGroup;
-import org.apache.shardingsphere.infra.executor.sql.raw.RawSQLExecuteUnit;
-import org.apache.shardingsphere.infra.executor.sql.raw.execute.callback.RawSQLExecutorCallback;
-import org.apache.shardingsphere.infra.executor.sql.raw.execute.result.ExecuteResult;
-import org.apache.shardingsphere.infra.executor.sql.raw.execute.result.update.ExecuteUpdateResult;
-import org.apache.shardingsphere.infra.executor.sql.resourced.jdbc.executor.ExecutorExceptionHandler;
+import org.apache.shardingsphere.infra.executor.kernel.ExecutorEngine;
+import org.apache.shardingsphere.infra.executor.kernel.model.ExecutionGroup;
+import org.apache.shardingsphere.infra.executor.sql.execute.engine.raw.RawSQLExecutionUnit;
+import org.apache.shardingsphere.infra.executor.sql.execute.engine.raw.callback.RawSQLExecutorCallback;
+import org.apache.shardingsphere.infra.executor.sql.execute.result.ExecuteResult;
+import org.apache.shardingsphere.infra.executor.sql.execute.result.update.UpdateResult;
+import org.apache.shardingsphere.infra.executor.sql.execute.engine.SQLExecutorExceptionHandler;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -37,27 +37,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public final class RawProxyExecutor {
     
-    private final ExecutorKernel executorKernel;
+    private final ExecutorEngine executorEngine;
     
     private final boolean serial;
     
     /**
      * Execute.
      *
-     * @param inputGroups input groups
+     * @param executionGroups execution groups
      * @param callback raw SQL execute callback
      * @return return true if is DQL, false if is DML
      * @throws SQLException SQL exception
      */
-    public Collection<ExecuteResult> execute(final Collection<InputGroup<RawSQLExecuteUnit>> inputGroups, final RawSQLExecutorCallback callback) throws SQLException {
+    public Collection<ExecuteResult> execute(final Collection<ExecutionGroup<RawSQLExecutionUnit>> executionGroups, final RawSQLExecutorCallback callback) throws SQLException {
         // TODO Load query header for first query
-        List<ExecuteResult> results = doExecute(inputGroups, null, callback);
+        List<ExecuteResult> results = doExecute(executionGroups, null, callback);
         // TODO refresh metadata
         if (null == results || results.isEmpty() || null == results.get(0)) {
-            return Collections.singleton(new ExecuteUpdateResult(0, 0L));
+            return Collections.singleton(new UpdateResult(0, 0L));
         }
         // CHECKSTYLE:OFF
-        if (results.get(0) instanceof ExecuteUpdateResult) {
+        if (results.get(0) instanceof UpdateResult) {
             // TODO refresh metadata
         }
         // CHECKSTYLE:ON
@@ -65,11 +65,12 @@ public final class RawProxyExecutor {
     }
     
     @SuppressWarnings("unchecked")
-    private <T> List<T> doExecute(final Collection<InputGroup<RawSQLExecuteUnit>> inputGroups, final RawSQLExecutorCallback firstCallback, final RawSQLExecutorCallback callback) throws SQLException {
+    private <T> List<T> doExecute(final Collection<ExecutionGroup<RawSQLExecutionUnit>> executionGroups, 
+                                  final RawSQLExecutorCallback firstCallback, final RawSQLExecutorCallback callback) throws SQLException {
         try {
-            return executorKernel.execute((Collection) inputGroups, firstCallback, callback, serial);
+            return executorEngine.execute((Collection) executionGroups, firstCallback, callback, serial);
         } catch (final SQLException ex) {
-            ExecutorExceptionHandler.handleException(ex);
+            SQLExecutorExceptionHandler.handleException(ex);
             return Collections.emptyList();
         }
     }
