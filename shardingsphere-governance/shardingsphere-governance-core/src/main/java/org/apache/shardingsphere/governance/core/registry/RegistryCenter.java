@@ -18,7 +18,7 @@
 package org.apache.shardingsphere.governance.core.registry;
 
 import com.google.common.base.Strings;
-import org.apache.shardingsphere.governance.core.event.GovernanceEventBus;
+import org.apache.shardingsphere.infra.eventbus.ShardingSphereEventBus;
 import org.apache.shardingsphere.governance.core.registry.instance.GovernanceInstance;
 import org.apache.shardingsphere.governance.repository.api.RegistryRepository;
 
@@ -40,7 +40,7 @@ public final class RegistryCenter {
         node = new RegistryCenterNode();
         repository = registryRepository;
         instance = GovernanceInstance.getInstance();
-        GovernanceEventBus.getInstance().register(this);
+        ShardingSphereEventBus.getInstance().register(this);
     }
     
     /**
@@ -59,6 +59,7 @@ public final class RegistryCenter {
     
     /**
      * Persist instance data.
+     * 
      * @param instanceData instance data
      */
     public void persistInstanceData(final String instanceData) {
@@ -67,10 +68,30 @@ public final class RegistryCenter {
     
     /**
      * Load instance data.
+     * 
      * @return instance data
      */
     public String loadInstanceData() {
         return repository.get(node.getProxyNodePath(instance.getInstanceId()));
+    }
+    
+    /**
+     * Load instance data.
+     * 
+     * @param instanceId instance id
+     * @return instance data
+     */
+    public String loadInstanceData(final String instanceId) {
+        return repository.get(node.getProxyNodePath(instanceId));
+    }
+    
+    /**
+     * Load all instances.
+     * 
+     * @return collection of all instances
+     */
+    public Collection<String> loadAllInstances() {
+        return repository.getChildrenKeys(node.getProxyNodesPath());
     }
     
     /**

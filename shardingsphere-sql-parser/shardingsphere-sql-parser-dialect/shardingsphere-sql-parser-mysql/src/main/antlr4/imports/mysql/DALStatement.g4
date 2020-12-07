@@ -24,12 +24,12 @@ use
     ;
 
 help
-    : HELP STRING_
+    : HELP string_
     ;
 
 explain
     : (DESC | DESCRIBE | EXPLAIN)
-    (tableName (columnName | pattern)?
+    (tableName (columnRef | textString)?
     | explainType? (explainableStatement | FOR CONNECTION connectionId)
     | ANALYZE select)
     ;
@@ -56,10 +56,6 @@ showIndex
 
 showCreateTable
     : SHOW CREATE TABLE tableName
-    ;
-
-showOther
-    : SHOW
     ;
 
 fromSchema
@@ -167,7 +163,7 @@ showFunctionStatus
     ;
 
 showGrant
-    : SHOW GRANTS (FOR userOrRole (USING roleName (COMMA_ roleName)+)?)?
+    : SHOW GRANTS (FOR userOrRole (USING userName (COMMA_ userName)+)?)?
     ;
 
 showMasterStatus
@@ -239,7 +235,7 @@ setCharacter
     ;
 
 setName
-    : SET NAMES (charsetName (COLLATE collationName)? | DEFAULT)
+    : SET NAMES (EQ_ expr | charsetName collateClause? | DEFAULT)
     ;
 
 clone
@@ -247,12 +243,20 @@ clone
     ;
 
 cloneAction
-    : LOCAL DATA DIRECTORY EQ_? cloneDir SEMI_
-    | INSTANCE FROM cloneInstance IDENTIFIED BY STRING_ (DATA DIRECTORY EQ_? cloneDir)? (REQUIRE NO? SSL)?
+    : LOCAL DATA DIRECTORY EQ_? cloneDir
+    | INSTANCE FROM cloneInstance IDENTIFIED BY string_ (DATA DIRECTORY EQ_? cloneDir)? (REQUIRE NO? SSL)?
     ;
 
 createUdf
     : CREATE AGGREGATE? FUNCTION functionName RETURNS (STRING | INTEGER | REAL | DECIMAL) SONAME shardLibraryName
+    ;
+
+install
+    : installComponent | installPlugin
+    ;
+
+uninstall
+    :uninstallComponent | uninstallPlugin
     ;
 
 installComponent
@@ -272,13 +276,16 @@ uninstallPlugin
     ;
 
 analyzeTable
-    : ANALYZE (NO_WRITE_TO_BINLOG | LOCAL)? TABLE (tableNames 
-    | tableName UPDATE HISTOGRAM ON columnNames (WITH NUMBER_ BUCKETS)
-    | tableName DROP HISTOGRAM ON columnNames)
+    : ANALYZE (NO_WRITE_TO_BINLOG | LOCAL)? tableOrTables tableList histogram?
+    ;
+
+histogram
+    : UPDATE HISTOGRAM ON columnNames (WITH NUMBER_ BUCKETS)?
+    | DROP HISTOGRAM ON columnNames
     ;
 
 checkTable
-    : CHECK TABLE tableNames checkTableOption
+    : CHECK tableOrTables tableList checkTableOption?
     ;
 
 checkTableOption
@@ -286,14 +293,14 @@ checkTableOption
     ;
 
 checksumTable
-    : CHECKSUM TABLE tableNames (QUICK | EXTENDED)
+    : CHECKSUM tableOrTables tableList (QUICK | EXTENDED)?
     ;
 optimizeTable
-    : OPTIMIZE (NO_WRITE_TO_BINLOG | LOCAL)? TABLE tableNames
+    : OPTIMIZE (NO_WRITE_TO_BINLOG | LOCAL)? tableOrTables tableList
     ;
 
 repairTable
-    : REPAIR (NO_WRITE_TO_BINLOG | LOCAL)? TABLE tableNames QUICK? EXTENDED? USE_FRM?
+    : REPAIR (NO_WRITE_TO_BINLOG | LOCAL)? tableOrTables tableList QUICK? EXTENDED? USE_FRM?
     ;
 
 alterResourceGroup
@@ -323,7 +330,7 @@ binlog
     ;
 
 cacheIndex
-    : CACHE INDEX (tableIndexList (COMMA_ tableIndexList)* | tableName PARTITION LP_ partitionList RP_) IN IDENTIFIER_
+    : CACHE INDEX (tableIndexList (COMMA_ tableIndexList)* | tableName PARTITION LP_ partitionList RP_) IN (identifier | DEFAULT)
     ;
 
 tableIndexList
@@ -358,14 +365,16 @@ loadIndexInfo
 
 resetStatement
     : RESET resetOption (COMMA_ resetOption)*
+    | resetPersist
     ;
 
 resetOption
-    : MASTER | SLAVE | QUERY CACHE
+    : MASTER (TO binaryLogFileIndexNumber)?
+    | SLAVE ALL? channelOption?
     ;
 
 resetPersist
-    : RESET PERSIST (existClause? IDENTIFIER_)
+    : RESET PERSIST (existClause? identifier)?
     ;
 
 restart

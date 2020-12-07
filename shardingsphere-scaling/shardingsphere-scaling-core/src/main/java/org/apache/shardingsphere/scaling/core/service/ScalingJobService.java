@@ -18,8 +18,8 @@
 package org.apache.shardingsphere.scaling.core.service;
 
 import org.apache.shardingsphere.scaling.core.config.ScalingConfiguration;
-import org.apache.shardingsphere.scaling.core.job.ScalingJobProgress;
-import org.apache.shardingsphere.scaling.core.job.ShardingScalingJob;
+import org.apache.shardingsphere.scaling.core.job.JobProgress;
+import org.apache.shardingsphere.scaling.core.job.ScalingJob;
 import org.apache.shardingsphere.scaling.core.job.check.DataConsistencyCheckResult;
 
 import java.util.List;
@@ -36,16 +36,7 @@ public interface ScalingJobService {
      *
      * @return scaling job service list
      */
-    List<ShardingScalingJob> listJobs();
-    
-    /**
-     * Check new yaml proxy configuration if should scaling.
-     *
-     * @param oldYamlProxyConfig old yaml proxy configuration
-     * @param newYamlProxyConfig new yaml proxy configuration
-     * @return if should scaling
-     */
-    boolean shouldScaling(String oldYamlProxyConfig, String newYamlProxyConfig);
+    List<ScalingJob> listJobs();
     
     /**
      * Start scaling job.
@@ -53,17 +44,19 @@ public interface ScalingJobService {
      * @param scalingConfig scaling job configuration
      * @return scaling job
      */
-    Optional<ShardingScalingJob> start(ScalingConfiguration scalingConfig);
-    
+    Optional<ScalingJob> start(ScalingConfiguration scalingConfig);
     
     /**
-     * Start scaling job if it should scaling.
+     * Start scaling job.
      *
-     * @param oldYamlProxyConfig old yaml proxy configuration
-     * @param newYamlProxyConfig new yaml proxy configuration
+     * @param sourceDataSource source data source
+     * @param sourceRule source rule
+     * @param targetDataSource target data source
+     * @param targetRule target rule
+     * @param scalingCallback scaling callback
      * @return scaling job
      */
-    Optional<ShardingScalingJob> start(String oldYamlProxyConfig, String newYamlProxyConfig);
+    Optional<ScalingJob> start(String sourceDataSource, String sourceRule, String targetDataSource, String targetRule, ScalingCallback scalingCallback);
     
     /**
      * Stop a job.
@@ -78,7 +71,7 @@ public interface ScalingJobService {
      * @param jobId job id
      * @return {@code ShardingScalingJob} instance
      */
-    ShardingScalingJob getJob(long jobId);
+    ScalingJob getJob(long jobId);
     
     /**
      * Get job progress.
@@ -86,7 +79,7 @@ public interface ScalingJobService {
      * @param jobId job id
      * @return scaling job progress
      */
-    ScalingJobProgress getProgress(long jobId);
+    JobProgress getProgress(long jobId);
     
     /**
      * Do data consistency check.
