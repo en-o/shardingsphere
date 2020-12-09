@@ -13,28 +13,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package org.apache.shardingsphere.agent.plugin.trace;
+package org.apache.shardingsphere.agent.metrics.api;
 
-import net.bytebuddy.matcher.ElementMatchers;
-import org.apache.shardingsphere.agent.core.plugin.PluginDefinition;
+import org.apache.shardingsphere.agent.metrics.api.fixture.FixtureMetricsRegister;
+import org.junit.Test;
 
-/**
- * Sample plugin definition.
- */
-public class SamplePluginDefinition extends PluginDefinition {
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertThat;
 
-    public SamplePluginDefinition() {
-        super("sample");
-    }
-
-    @Override
-    protected void define() {
-        intercept("org.apache.shardingsphere.proxy.frontend.command.CommandExecutorTask")
-                .aroundInstanceMethod(ElementMatchers.named("executeCommand"))
-                .implement("org.apache.shardingsphere.agent.plugin.trace.SampleAdvice")
-                .build();
+public final class MetricsProviderTest extends BaseTest {
+    
+    @Test
+    public void assertInstance() {
+        MetricsRegister metricsRegister = MetricsProvider.INSTANCE.newInstance();
+        assertThat(metricsRegister, instanceOf(FixtureMetricsRegister.class));
     }
 }

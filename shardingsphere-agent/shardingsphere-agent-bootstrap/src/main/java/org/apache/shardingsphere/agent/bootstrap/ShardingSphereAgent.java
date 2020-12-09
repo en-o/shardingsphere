@@ -51,9 +51,9 @@ public class ShardingSphereAgent {
         AgentBuilder builder = new AgentBuilder.Default()
             .with(byteBuddy)
             .ignore(ElementMatchers.isSynthetic())
-            .or(ElementMatchers.nameStartsWith("org.apache.shardingsphere.agent."))
-            .or(ElementMatchers.not(ElementMatchers.nameStartsWith("org.apache.shardingsphere.")));
+            .or(ElementMatchers.nameStartsWith("org.apache.shardingsphere.agent."));
         AgentPluginLoader agentPluginLoader = AgentPluginLoader.getInstance();
+        agentPluginLoader.loadAllPlugins();
         agentPluginLoader.initialAllServices();
         builder.type(agentPluginLoader.typeMatcher())
                .transform(new ShardingSphereTransformer(agentPluginLoader))

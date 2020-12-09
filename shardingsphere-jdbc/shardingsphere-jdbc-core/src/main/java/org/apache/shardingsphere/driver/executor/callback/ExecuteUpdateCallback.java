@@ -13,28 +13,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package org.apache.shardingsphere.agent.plugin.trace;
+package org.apache.shardingsphere.driver.executor.callback;
 
-import net.bytebuddy.matcher.ElementMatchers;
-import org.apache.shardingsphere.agent.core.plugin.PluginDefinition;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
- * Sample plugin definition.
+ * Execute update callback.
  */
-public class SamplePluginDefinition extends PluginDefinition {
-
-    public SamplePluginDefinition() {
-        super("sample");
-    }
-
-    @Override
-    protected void define() {
-        intercept("org.apache.shardingsphere.proxy.frontend.command.CommandExecutorTask")
-                .aroundInstanceMethod(ElementMatchers.named("executeCommand"))
-                .implement("org.apache.shardingsphere.agent.plugin.trace.SampleAdvice")
-                .build();
-    }
+public interface ExecuteUpdateCallback {
+    
+    /**
+     * Execute update.
+     * 
+     * @param sql SQL to be executed
+     * @param statement JDBC statement
+     * @return effected records count
+     * @throws SQLException SQL exception
+     */
+    int executeUpdate(String sql, Statement statement) throws SQLException;
 }

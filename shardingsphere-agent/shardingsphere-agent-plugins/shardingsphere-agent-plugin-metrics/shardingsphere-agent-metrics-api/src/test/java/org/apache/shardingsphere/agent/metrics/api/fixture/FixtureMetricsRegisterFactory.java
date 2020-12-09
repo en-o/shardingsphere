@@ -13,28 +13,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package org.apache.shardingsphere.agent.plugin.trace;
+package org.apache.shardingsphere.agent.metrics.api.fixture;
 
-import net.bytebuddy.matcher.ElementMatchers;
-import org.apache.shardingsphere.agent.core.plugin.PluginDefinition;
+import org.apache.shardingsphere.agent.metrics.api.MetricsRegister;
+import org.apache.shardingsphere.agent.metrics.api.MetricsRegisterFactory;
 
-/**
- * Sample plugin definition.
- */
-public class SamplePluginDefinition extends PluginDefinition {
-
-    public SamplePluginDefinition() {
-        super("sample");
-    }
-
+public final class FixtureMetricsRegisterFactory implements MetricsRegisterFactory {
+    
     @Override
-    protected void define() {
-        intercept("org.apache.shardingsphere.proxy.frontend.command.CommandExecutorTask")
-                .aroundInstanceMethod(ElementMatchers.named("executeCommand"))
-                .implement("org.apache.shardingsphere.agent.plugin.trace.SampleAdvice")
-                .build();
+    public MetricsRegister newInstance() {
+        return new FixtureMetricsRegister();
+    }
+    
+    @Override
+    public String getType() {
+        return "fixture";
     }
 }
